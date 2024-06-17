@@ -1,0 +1,206 @@
+---
+title: "Mid-Term- Project-Redesign-Code"
+author: "Shwetha-Shameema-Aniritha"
+date: "2022-10-06"
+output:
+  html_document:
+    df_print: paged
+  word_document: default
+  pdf_document: default
+---
+1. Bad-Graph
+
+```{r}
+            # Install png package
+library("png")
+library("patchwork")  
+my_image <- readPNG("C:\\Users\\aniri\\OneDrive\\Documents\\graphbad2.png", native = TRUE)
+ggp_image <-                    # Combine plot & image
+  inset_element(p = my_image,left = 0.5,
+                bottom = 0.55,
+                right = 0.95,
+                top = 0.95
+                )
+ggp_image   
+
+```
+
+2.Dot-Plot
+
+```{r}
+library(ggplot2)
+library(plotly)
+library(readr)
+
+Data_df <- read_csv("STAT-515-Midtermdataset.csv")
+a <- ggplot(Data_df , aes(x = code, y = Rank)) +
+  xlab("States") +
+  ylab("Ranking") +
+geom_point() 
+a  + theme(axis.text = element_text(size= 6, vjust = -1,colour = "black"))
+
+```
+
+
+3. Bar-Graph
+
+```{r}
+
+library(plotly)
+library(readr)
+library(ggplot2)
+
+Data_df <- read_csv("STAT-515-Midtermdataset.csv")
+ #BAR GRAPH 1
+plot_ly(
+  data = Data_df,
+  x = ~code,
+  y = ~Rank,
+  type = "bar",
+  color = ~code,
+  colors = c("red", "blue", "black", "#32a852", "#c10dd1")
+)
+
+#BAR GRAPH 2
+plot_ly(
+  data = Data_df,
+  x = ~code,
+  y = ~onemillion_last,
+  type = "bar",
+  color = ~code,
+  colors = c("green","yellow")
+)%>%layout(
+  title = "HOW LONG $1 MILLION WOULD LONG LAST",
+  xaxis = list(title="STATES",categoryorder = "total descending"),
+  yaxis = list(title = "YEARS")
+)
+```
+
+4.MicroMap
+
+```{r}
+library(micromapST)
+library(tidyverse)
+
+millionWill <- read.csv(file = "STAT-515-Midtermdataset.csv",header=T, as.is=TRUE)
+str(millionWill)
+
+type=c('mapcum','id','dot','dot')
+lab1=c('','','Cost of','one million')
+lab2=c('','','Living Index','will last')
+lab3=c('','','Dollars','Years')
+col1=c(NA,NA,'CostofLiving','onemillion_last')
+col2=c(NA,NA,NA,'Years.Months')
+refVals=c(NA,NA,NA,0)
+
+panelDesc <- data.frame(type,lab1,lab2,lab3,col1,col2,refVals)
+
+fname = "1MillionWill.pdf"
+pdf(file = fname,width = 7.5,height = 10)
+
+micromapST(millionWill,
+           panelDesc,
+           rowNamesCol = 'State',
+           rowNames = 'full',
+           sortVar = 'onemillion_last', ascend = FALSE,
+           title = c("Can you Retire on 1 Million?",
+           "Here is What You Need to Know..."),
+           ignoreNoMatches = FALSE)
+
+```
+
+
+
+5.Plot 
+
+
+```{r}
+
+library(dplyr)
+library(readr)
+library(maps)
+library(plotly)
+
+
+#loading data
+Data_df <- read_csv("STAT-515-Midtermdataset.csv") %>%
+mutate(hover = paste0("STATE:",' ',State,'\n',"RANK:",' ',Rank,'\n',"ANNUAL_LIVING_COST:",' ',Annual_expenditure_Costofliving,'\n',"Year.Month:",' ',onemillion_last ))
+
+
+
+graph = plot_geo(Data_df, 
+                        locationmode = "USA-states",
+                 colors = 'Spectral'
+                       ) %>%
+  add_trace(locations = ~code,
+            z = ~Rank ,
+            color = ~Rank,
+            text = ~hover,
+            hoverinfo = 'text'
+             
+            )%>%
+  add_trace(type = "scattergeo",
+            locationmode = 'USA-states',
+             locations =~code,
+            mode = "text",
+            text = ~code,
+            textfont = list(color = rgb(0,0,0), size = 12)
+            )%>%
+  layout(geo = list(scope = 'usa'))%>%
+  layout( title = "How Long $1 Million Will Last in Retirement in Every State"
+        )%>%
+ config(displayModeBar = FALSE)
+  
+
+
+graph
+
+```
+Figure 5: The Representation of Entire Interative  US map to know how long 1 million will last after Retirement in every satae.
+
+
+6. Projecting Top 4 countries with Low Rank and High Cost of Living
+
+
+
+```{r}
+library(usmap)
+library(dplyr)
+library(maps)
+library(plotly)
+
+USA <- read.csv(
+  file="STAT-515-Midtermdataset.csv",
+  header=T, as.is=TRUE)
+USA <- USA[order(USA$State),]
+USA$fips = statepop$fips
+USA$abbr = statepop$abbr
+
+  
+h<-plot_usmap(data = USA, values = "Rank", include = c("CA","OR","NY","HI"),labels = TRUE) + 
+  scale_fill_distiller('Rank', palette="Spectral")+
+  labs(title = "Top 4 Region", subtitle = "Low Rank Sataes where Cost of living High") +
+  theme(legend.position = "right")
+h
+```
+Figure 7: Shows The top-4 Region in USA which has High-Cost of living and Rank that does not suit for living after Retirement.  
+
+7. Projecting Top 4 countries with High Rank and High Cost of Living.
+
+
+```{r}
+library(usmap)
+
+USA <- read.csv(
+  file="STAT-515-Midtermdataset.csv",
+  header=T, as.is=TRUE)
+USA <- USA[order(USA$State),]
+USA$fips = statepop$fips
+USA$abbr = statepop$abbr
+l<- plot_usmap(data = USA, values = "Rank", include = c("MS","AR","TN","KS"),color = "Red",labels = TRUE) + 
+  scale_fill_distiller('Rank', palette="Spectral")+
+  labs(title = "TOP 4 Region", subtitle = " Rank Sataes where Cost of living Low") +
+  theme(legend.position = "right")
+l
+```
+Figure 7: Shows The top-4 Region in USA which has low-Cost of living and Rank that does may suit for living after Retirement. 
